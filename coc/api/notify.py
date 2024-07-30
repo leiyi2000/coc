@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body
 
-from coc import models
+from coc import models, timer
 from coc.constants import NotifyStatus
 
 
@@ -14,13 +14,16 @@ async def create(
     payload: dict | None = Body(default=None),
     retry: int = Body(default=0),
 ):
-    return await models.Notify.create(
+    notify = await models.Notify.create(
         timestamp=timestamp,
         callback=callback,
         payload=payload,
         retry=retry,
         status=NotifyStatus.pending,
     )
+    job = timer.Job(notify.id, callback, payload, timestamp, retry)
+    timer.Timer.push(job)
+    return notify
 
 
 @router.get("")

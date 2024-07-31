@@ -1,0 +1,13 @@
+services:
+  coc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: coc:${IMAGE_TAG:-latest}
+    volumes:
+      - ${PWD}/data:/data
+    environment:
+      - DATABASE_URL=sqlite:/data/coc.sqlite3
+    ports:
+      - "8000:8000"
+    restart: always

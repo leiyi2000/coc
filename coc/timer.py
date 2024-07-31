@@ -45,6 +45,7 @@ class Job:
             post_data = {
                 "id": str(self.id),
                 "payload": self.payload,
+                "timestamp": self.trigger_timestamp,
             }
             response = await client.post(self.callback, json=post_data)
             response.raise_for_status()

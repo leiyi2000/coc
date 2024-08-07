@@ -53,7 +53,7 @@ class Job:
     async def run(self):
         error = None
         error_message = None
-        for _ in range(max(self.retry, 1)):
+        for i in range(max(self.retry, 1)):
             try:
                 await self._run()
                 await models.Notify.filter(id=self.id).update(
@@ -63,6 +63,8 @@ class Job:
             except Exception as e:
                 error = e
                 error_message = traceback.format_exc()
+            finally:
+                await asyncio.sleep(i)
         await models.Notify.filter(id=self.id).update(status=NotifyStatus.exception)
         log.exception(error_message)
         raise error

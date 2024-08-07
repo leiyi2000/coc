@@ -6,14 +6,14 @@ import pytest
 
 
 # 定义接口的URL
-BASE_URL = "http://127.0.0.1:8000/notify"
+BASE_URL = "http://10.10.77.52:8020/notify"
 
 
 # 定义请求函数
 def send_request():
     post_data = {
         "timestamp": int(time.time()) + random.randint(1, 10) * 60,
-        "callback": "http://127.0.0.1:8001/accept",
+        "callback": "http://10.10.77.52:8030/accept",
         "payload": {},
         "retry": 0,
     }

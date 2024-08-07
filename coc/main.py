@@ -1,5 +1,3 @@
-"""服务入口"""
-
 import asyncio
 from contextlib import asynccontextmanager
 
@@ -11,6 +9,22 @@ from coc.api import router
 from coc import models, timer
 from coc.constants import NotifyStatus
 from coc.settings import APP_NAME, TORTOISE_ORM
+
+
+async def reload_timer():
+    """重新加载定时器
+
+    1. 分库防止重复注册
+    """
+    async for notify in models.Notify.filter(status=NotifyStatus.pending):
+        job = timer.Job(
+            notify.id,
+            notify.callback,
+            notify.payload,
+            notify.timestamp,
+            notify.retry,
+        )
+        timer.Timer.push(job)
 
 
 @asynccontextmanager
@@ -27,16 +41,7 @@ async def lifespan(app: FastAPI):
         config=TORTOISE_ORM,
         add_exception_handlers=False,
     )
-    # 恢复
-    async for notify in models.Notify.filter(status=NotifyStatus.pending):
-        job = timer.Job(
-            notify.id,
-            notify.callback,
-            notify.payload,
-            notify.timestamp,
-            notify.retry,
-        )
-        timer.Timer.push(job)
+    await reload_timer()
     # 定时器开始轮询
     asyncio.create_task(timer.Timer.run())
     yield
